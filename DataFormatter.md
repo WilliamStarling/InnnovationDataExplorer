@@ -1,1 +1,0 @@
-Read Me file for data formatting.
