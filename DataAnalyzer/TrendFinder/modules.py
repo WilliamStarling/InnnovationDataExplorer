@@ -1,5 +1,5 @@
 #For setting up and creating the DSPy signatures and modules needed to search for trends as a part of the bigger data analysis agent.
-import dspy
+from dspy-3.0.0b2 import dspy
 from attachments.dspy import Attachments
 
 class doc_analyzer_sql(dspy.Signature):
@@ -24,7 +24,4 @@ class collection_analyzer(dspy.Module):
   super().__init__()
 self.doc_analyzer_sql = dspy.ChainOfThought(doc_analyzer_sql)
 self.doc_analyzer_nosql = dspy.ChainOfThought(doc_analyzer_nosql)
-
-def forward(self, documents: list[Attachments]):
-  for document in Attachments:
   
