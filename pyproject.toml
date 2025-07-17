@@ -3,4 +3,9 @@ name = "repl-nix-workspace"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "attachments>=0.21.0",
+    "dspy-ai==3.0.0b2",
+    "jupyter>=1.1.1",
+    "pandas>=2.3.1",
+]
