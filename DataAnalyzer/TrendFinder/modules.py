@@ -15,9 +15,9 @@ class doc_analyzer(dspy.Signature):
         desc=
         "the categories to generate a datapoint for based on what's in the document."
     )
-    in_df: pd.DataFrame = dspy.InputField(
+    in_csv: str = dspy.InputField(
         desc=
-        "The pandas dataframe being used to store information about the collection of documents."
+        "The csv file being used to store information about the collection of documents. elements are seperated by commas, new rows by new line characters."
     )
     last_context: str = dspy.InputField(
         desc=
@@ -27,24 +27,27 @@ class doc_analyzer(dspy.Signature):
         desc=
         "The input context, where new information is optionally added on if thought to be important. New context, if present at all, should be brief to ensure the overall context doesn't get too long."
     )
-    out_df: str = dspy.OutputField(
+    out_csv: str = dspy.OutputField(
         desc=
-        "The pandas dataframe updated to include the current documents information."
+        "The csv file updated to include the current documents information. elements are seperated by commas, new rows by new line characters."
     )
 
 
-"""
 class trend_analyzer(dspy.Module):
-  def __init__(self):
-    super().__init__()
-    self.doc_analyzer_sql = dspy.ChainOfThought(doc_analyzer)
-    
-  def forward(self, documents: list[Attachments], categories: list[str], context: str):
-    doc_summary = pd.DataFrame(columns=categories)
-    for document in documents:
-      result = self.doc_analyzer_sql(document=document, categories=categories, in_df = doc_summary, last_context=context)
-      context = result.next_context
-      doc_summary = result.out_csv
-      documents_csv = doc_summary.to_csv(index=False)
-    return document_csv, context
-"""
+
+    def __init__(self):
+        super().__init__()
+        self.doc_analyzer_sql = dspy.ChainOfThought(doc_analyzer)
+
+    def forward(self, documents: list[Attachments], categories: list[str],
+                context: str):
+        doc_summary = ""
+        for document in documents:
+            result = self.doc_analyzer_sql(document=document,
+                                           categories=categories,
+                                           in_csv=doc_summary,
+                                           last_context=context)
+            context = result.next_context
+            doc_summary = result.out_csv
+        print(doc_summary)
+        return doc_summary, context

@@ -1,5 +1,17 @@
 from modules import *
+import os
+import mlflow
 
+api_key = os.environ['williamGem']
+lm = dspy.LM('gemini/gemini-2.5-flash', api_key=api_key)
+dspy.configure(lm=lm)
+
+mlflow_tracking_uri = "../../mlflow/experiments"
+mlflow.set_tracking_uri(mlflow_tracking_uri)
+mlflow.set_experiment("TrendFinder")
+mlflow.dspy.autolog()
+
+categories = ["document", "number of violations"]
 documents = []
 documents.append(
     Attachments(
@@ -13,3 +25,7 @@ documents.append(
     Attachments(
         "DataAnalyzer/TrendFinder/TrainingData/61763 ALR10C6PZ 077 07-10-2025 INSPR AEPACS NA.pdf"
     ))
+
+analyze_trends = trend_analyzer()
+result = analyze_trends(documents=documents, categories=categories, context="")
+print(result)
