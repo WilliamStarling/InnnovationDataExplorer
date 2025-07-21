@@ -8,7 +8,7 @@ print(f"DSPy version: {dspy.__version__}")
 
 
 class doc_analyzer(dspy.Signature):
-    """You will receive a single document from a collection, and using the given categories you will update the csv file to include the current documents's information."""
+    """You will receive a single document from a collection, and using the given categories you will update the csv file to include the current documents's information. You will also take note of any trends and patterns that appear, and add them onto the context output file."""
     document: Attachments = dspy.InputField(
         desc="the current document to analyze")
     categories: list[str] = dspy.InputField(
@@ -25,7 +25,7 @@ class doc_analyzer(dspy.Signature):
     )
     next_context: str = dspy.OutputField(
         desc=
-        "The input context, where new information is optionally added on if thought to be important. New context, if present at all, should be brief to ensure the overall context doesn't get too long."
+        "The input context passed on, where new information is optionally added on if thought to be important. New context, if present at all, should be brief to ensure the overall context doesn't get too long."
     )
     out_csv: str = dspy.OutputField(
         desc=
@@ -49,5 +49,5 @@ class trend_analyzer(dspy.Module):
                                            last_context=context)
             context = result.next_context
             doc_summary = result.out_csv
-        print(doc_summary)
+        #print(doc_summary)
         return doc_summary, context
