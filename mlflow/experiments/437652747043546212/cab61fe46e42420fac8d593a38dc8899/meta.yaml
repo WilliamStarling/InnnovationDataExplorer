@@ -1,0 +1,14 @@
+artifact_uri: /home/runner/workspace/DataAnalyzer/TrendFinder/../../mlflow/experiments/437652747043546212/cab61fe46e42420fac8d593a38dc8899/artifacts
+end_time: 1753383518680
+entry_point_name: ''
+experiment_id: '437652747043546212'
+lifecycle_stage: active
+run_id: cab61fe46e42420fac8d593a38dc8899
+run_name: doc_analyzer_optimization
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1753383518578
+status: 4
+tags: []
+user_id: runner
