@@ -2,10 +2,18 @@ from browser_use.llm import ChatGoogle
 from browser_use import Agent 
 from dotenv import load_dotenv
 import asyncio
+from dspyfieldextractor import DspyFieldExtractor
 
 load_dotenv()
 
 llm = ChatGoogle(model="gemini-2.5-flash")
+
+user_input = input("What would you like to search ADEM efile for")
+extractor_output = DspyFieldExtractor(user_input)
+search_task = f"search using the following parameters: media_area: {extractor_output.media_area}, facility: {extractor_output.facility}, permit_number: {extractor_output.permit_number}, county: {extractor_output.county}, srf_number: {extractor_output.srf_number} document_category: {extractor_output.document_category}. You may have to wait for the files to load."
+download_task = f"download the first {extractor_output.number_of_files_to_download} files. When you click the download button on each file it will open another tab which you must navigate to and click a second download button."
+
+task = search_task + download_task
 
 initial_actions = [
     {'go_to_url' : {'url' : 'http://app.adem.alabama.gov/efile/'}}
@@ -13,7 +21,7 @@ initial_actions = [
 
 async def main():
     agent = Agent(
-        task="1.go to http://app.adem.alabama.gov/efile/ 2.search using the following parameters: media area:water, county:mobile, category:inspections. you may have to wait for the files to load 3. download the first file in the list of files. when you click the download button it will open another tab which you must navigate to and press a second download button",
+        task=task,
         initial_actions=initial_actions,
         #extend_system_message="""placehold""",
         llm=llm
