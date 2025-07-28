@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-lm = dspy.LM("gemini/gemini-2.0-flash-lite", api_key=os.getenv('GOOGLE_API_KEY'))
+lm = dspy.LM("gpt-4.1", api_key=os.getenv('OPENAI_API_KEY'))
 dspy.configure(lm=lm)
 
 class ExtractFields(dspy.Signature):
