@@ -2,6 +2,7 @@
 import dspy
 from attachments.dspy import Attachments
 import pandas as pd
+import os
 
 # Print the dspy version being used
 print(f"DSPy version: {dspy.__version__}")
@@ -51,3 +52,165 @@ class trend_analyzer(dspy.Module):
             doc_summary = result.out_csv
         #print(doc_summary)
         return doc_summary, context
+
+
+def get_user_input():
+    """Get user input for document paths and categories"""
+    print("=" * 60)
+    print("🔍 TREND ANALYZER - COMMAND LINE INTERFACE")
+    print("=" * 60)
+    
+    # Get document paths
+    print("\n📄 DOCUMENT PATHS:")
+    print("Enter document paths (one per line, empty line to finish):")
+    document_paths = []
+    while True:
+        path = input("Document path: ").strip()
+        if not path:
+            break
+        if not os.path.exists(path):
+            print(f"⚠️  Warning: File '{path}' does not exist!")
+            continue_anyway = input("Continue anyway? (y/n): ").lower().strip()
+            if continue_anyway != 'y':
+                continue
+        document_paths.append(path)
+    
+    if not document_paths:
+        print("❌ No document paths provided. Exiting...")
+        return None, None
+    
+    print(f"✅ Added {len(document_paths)} document(s)")
+    
+    # Get categories
+    print("\n🏷️  CATEGORIES:")
+    print("Enter categories to analyze (one per line, empty line to finish):")
+    categories = []
+    while True:
+        category = input("Category: ").strip()
+        if not category:
+            break
+        categories.append(category)
+    
+    if not categories:
+        print("❌ No categories provided. Exiting...")
+        return None, None
+    
+    print(f"✅ Added {len(categories)} categor(ies): {', '.join(categories)}")
+    
+    return document_paths, categories
+
+
+def run_command_line_analysis():
+    """Run the trend analyzer from command line"""
+    import os
+    
+    # Get user input
+    document_paths, categories = get_user_input()
+    if not document_paths or not categories:
+        return
+    
+    # Setup DSPy with Gemini
+    print("\n🤖 SETTING UP AI MODEL:")
+    api_key = os.environ.get('paul2')
+    if not api_key:
+        print("❌ Error: 'paul2' environment variable not found!")
+        print("Please set your Gemini API key in the environment variables.")
+        return
+    
+    try:
+        lm = dspy.LM('gemini/gemini-2.5-flash', api_key=api_key, max_tokens=8000)
+        dspy.configure(lm=lm)
+        print("✅ AI model configured successfully")
+    except Exception as e:
+        print(f"❌ Error setting up AI model: {e}")
+        return
+    
+    # Create Attachments objects from document paths
+    print("\n📎 LOADING DOCUMENTS:")
+    documents = []
+    for path in document_paths:
+        try:
+            attachment = Attachments(path)
+            documents.append(attachment)
+            print(f"✅ Loaded: {path}")
+        except Exception as e:
+            print(f"❌ Error loading '{path}': {e}")
+    
+    if not documents:
+        print("❌ No documents could be loaded. Exiting...")
+        return
+    
+    # Set default context
+    default_context = "Search the provided documents for information that fits in the provided categories."
+    
+    # Run trend analysis
+    print("\n🔍 RUNNING ANALYSIS:")
+    print("This may take a few moments...")
+    
+    try:
+        analyzer = trend_analyzer()
+        csv_result, final_context = analyzer.forward(
+            documents=documents,
+            categories=categories,
+            context=default_context
+        )
+        
+        print("\n" + "=" * 60)
+        print("📊 ANALYSIS RESULTS")
+        print("=" * 60)
+        
+        # Display CSV results
+        print("\n📋 GENERATED CSV DATA:")
+        if csv_result:
+            csv_lines = csv_result.split('\n')
+            for i, line in enumerate(csv_lines):
+                if line.strip():
+                    print(f"   {line}")
+            print(f"\n✅ Generated {len([l for l in csv_lines if l.strip()]) - 1} data rows")
+        else:
+            print("   No data generated")
+        
+        # Display final context
+        print(f"\n💭 FINAL CONTEXT:")
+        if final_context:
+            context_preview = final_context[:500]
+            if len(final_context) > 500:
+                context_preview += "..."
+            print(f"   {context_preview}")
+        
+        # Ask if user wants to save results
+        print(f"\n💾 SAVE RESULTS:")
+        save_choice = input("Save results to file? (y/n): ").lower().strip()
+        if save_choice == 'y':
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            
+            # Save CSV
+            csv_filename = f"trend_analysis_{timestamp}.csv"
+            with open(csv_filename, 'w', encoding='utf-8') as f:
+                f.write(csv_result)
+            
+            # Save context
+            context_filename = f"trend_analysis_{timestamp}_context.txt"
+            with open(context_filename, 'w', encoding='utf-8') as f:
+                f.write(f"Analysis Context:\n{final_context}\n\n")
+                f.write(f"Categories Used: {', '.join(categories)}\n")
+                f.write(f"Documents Analyzed: {len(documents)}\n")
+                f.write(f"Document Paths:\n")
+                for path in document_paths:
+                    f.write(f"  - {path}\n")
+            
+            print(f"✅ Results saved:")
+            print(f"   📊 CSV: {csv_filename}")
+            print(f"   📄 Context: {context_filename}")
+        
+        print("\n🎉 Analysis completed successfully!")
+        
+    except Exception as e:
+        print(f"❌ Error during analysis: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    run_command_line_analysis()
