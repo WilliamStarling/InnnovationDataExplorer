@@ -5,7 +5,6 @@ import pandas as pd
 import os
 
 # Print the dspy version being used
-print(f"DSPy version: {dspy.__version__}")
 
 
 class doc_analyzer(dspy.Signature):
