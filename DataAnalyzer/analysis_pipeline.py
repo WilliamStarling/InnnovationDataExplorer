@@ -19,7 +19,7 @@ from AICategorizerwiReRa.categorizer import (IReRaCategorizer,
                                              ProcessingResult, CategoryMatch,
                                              setup_categorizer_pattern_only,
                                              setup_categorizer_with_openai)
-from TrendFinder.modules import trend_analyzer, doc_analyzer
+from TrendFinder.trend_analysis import trend_analyzer, doc_analyzer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

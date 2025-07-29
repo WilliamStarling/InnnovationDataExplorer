@@ -1,4 +1,4 @@
-from TrendFinder.modules import *
+from TrendFinder.trend_analysis import *
 import analysis_pipeline
 import os
 import asyncio
