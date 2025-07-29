@@ -1,16 +1,23 @@
-from modules import *
+"""
+code to test the programming side of trend_analysis code. This does not test the command line interface, just calling the modules in code.
+"""
+#import necessary packages
+from trend_analysis import *
 import os
 import mlflow
 
+#set up dspy
 api_key = os.environ['paul2']
 lm = dspy.LM('gemini/gemini-2.5-flash', api_key=api_key, max_tokens=8000)
 dspy.configure(lm=lm)
 
+#set up mlflow
 mlflow_tracking_uri = "../../mlflow/experiments"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 mlflow.set_experiment("TrendFinder")
 mlflow.dspy.autolog()
 
+#set up documents and categories for input data. run documents through Attacments api to get Attachments objects.
 categories = [
     "document", "number of violations", "list and details of violations"
 ]
@@ -26,9 +33,12 @@ documents.append(
     Attachments(
         "TrainingData/61763 ALR10C6PZ 077 07-10-2025 INSPR AEPACS NA.pdf"))
 
+#run documents through trend_analyzer
 analyze_trends = trend_analyzer()
 result, context = analyze_trends(documents=documents,
                                  categories=categories,
                                  context="")
+
+#print results
 print(result)
 print(context)
