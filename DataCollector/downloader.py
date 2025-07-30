@@ -6,7 +6,7 @@ import sys
 
 def download_pdfs(links: list[str], limit: int = None) -> None:
     """Download each PDF to ``DOWNLOAD_DIR`` using Playwright."""
-    DOWNLOAD_DIR = "downloads/"
+    DOWNLOAD_DIR = "adem_downloads/"
     with sync_playwright() as pw:
         DEV_MODE = "--show" in sys.argv
         browser = pw.chromium.launch(headless=not DEV_MODE, slow_mo=250 if DEV_MODE else 0)
@@ -35,5 +35,4 @@ def download_pdfs(links: list[str], limit: int = None) -> None:
                 logging.warning("Failed to download %s: %s", link, e)
         context.close()
         browser.close()
-        
-#{"links": ["http://lf.adem.alabama.gov/weblink/DocView.aspx?id=105713248&dbid=0", "http://lf.adem.alabama.gov/weblink/DocView.aspx?id=105713249&dbid=0"]}
+    
