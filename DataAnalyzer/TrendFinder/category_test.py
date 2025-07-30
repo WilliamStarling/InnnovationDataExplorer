@@ -14,7 +14,7 @@ dspy.configure(lm=lm)
 #set up mlflow
 mlflow_tracking_uri = "../../mlflow/experiments"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
-mlflow.set_experiment("TrendFinder")
+mlflow.set_experiment("CategoryFinder")
 mlflow.dspy.autolog()
 
 #set up documents and categories for input data. run documents through Attacments api to get Attachments objects.
