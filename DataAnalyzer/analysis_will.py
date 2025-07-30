@@ -87,6 +87,30 @@ if __name__ == "__main__":
     answer = input("use custom inputs? (y/n): ")
     if answer.lower() == "n":
       analysis_result, context = example_usage(documents, context, analysis_result, analyze_documents)
+    else:
+      # Get custom document paths
+      print("Enter document paths (press Enter after each path, type 'done' when finished):")
+      while True:
+        doc_path = input("Document path: ")
+        if doc_path.lower() == 'done':
+          break
+        if doc_path.strip():  # Only add non-empty paths
+          try:
+            documents.append(Attachments(doc_path))
+            print(f"Added: {doc_path}")
+          except Exception as e:
+            print(f"Error adding {doc_path}: {e}")
+      
+      # Get custom context
+      if documents:  # Only ask for context if we have documents
+        print("\nEnter the context/instructions for what you're looking for in the documents:")
+        context = input("Context: ")
+        
+        # Run the analysis with custom inputs
+        analysis_result, context = analyze_documents.forward(documents=documents, context=context)
+      else:
+        print("No valid documents provided. Exiting.")
+        exit()
 
     #print the results!
     print_results(analysis_result, context)
