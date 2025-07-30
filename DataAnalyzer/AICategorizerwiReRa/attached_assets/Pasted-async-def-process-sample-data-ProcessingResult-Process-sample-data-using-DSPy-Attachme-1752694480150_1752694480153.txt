@@ -1,0 +1,1471 @@
+async def process_sample_data() -> ProcessingResult:
+    """Process sample data using DSPy Attachments"""
+    # Create sample data
+    sample_data = {
+        "employee_data.json": json.dumps({
+            "employee_id": "EMP001",
+            "name": "John Doe",
+            "email": "john.doe@company.com",
+            "phone": "(555) 123-4567",
+            "hire_date": "2023-01-15",
+            "salary": "$75000",
+            "department": "Engineering",
+            "manager": "Jane Smith",
+            "address": "123 Main St, Anytown, ST 12345"
+        }, indent=2),
+        "customer_info.csv": """customer_id,name,email,phone,address,registration_date
+CUST001,Jane Smith,jane@email.com,555-987-6543,123 Main St,2023-02-01
+CUST002,Bob Johnson,bob@test.com,555-111-2222,456 Oak Ave,2023-02-15
+CUST003,Alice Williams,alice@company.com,555-333-4444,789 Pine Rd,2023-03-01""",
+        "performance_report.txt": """Employee Performance Report
+Employee ID: EMP001
+Name: Alice Williams
+Email: alice@company.com
+Performance Score: 85%
+Review Date: 2024-03-15
+Department: Marketing
+Supervisor: Michael Brown
+Goals Met: 8/10
+Improvement Areas: Time management, Communication
+Next Review: 2024-09-15"""
+    }
+    
+    # Create DSPy Attachments object
+    attachments = create_attachments_from_content(sample_data)
+    
+    # Initialize categorizer (pattern-only mode for reliable testing)
+    categorizer = setup_categorizer_pattern_only()
+    
+    # Process
+    return await categorizer.categorize_with_irena(attachments)
+
+# Main execution example
+async def main():
+    """Main execution example with better error handling"""
+    try:
+        print("=" * 60)
+        print("STARTING DATA CATEGORIZATION SYSTEM")
+        print("=" * 60)
+        
+        # Process sample data
+        print("Processing sample data...")
+        result = await process_sample_data()
+        
+        print("\n" + "=" * 60)
+        print("AGENT MESSAGE:")
+        print("=" * 60)
+        print(result.agent_message)
+        
+        print("\n" + "=" * 60)
+        print("DISCOVERED CATEGORIES:")
+        print("=" * 60)
+        if result.discovered_categories:
+            for category, matches in result.discovered_categories.items():
+                print(f"\n📁 {category.upper()}:")
+                for match in matches:
+                    print(f"   • {match.field_name} = '{match.sample_value}' ")
+                    print(f"     (confidence: {match.confidence:.2f}, type: {match.data_type}, file: {match.file_source})")
+        else:
+            print("No categories discovered. Check input data and processing.")
+        
+        print("\n" + "=" * 60)
+        print("CONFIDENCE SCORES:")
+        print("=" * 60)
+        for category, score in result.confidence_scores.items():
+            status = "🟢 HIGH" if score > 0.8 else "🟡 MEDIUM" if score > 0.6 else "🔴 LOW"
+            print(f"  {category}: {score:.2f} {status}")
+        
+        print("\n" + "=" * 60)
+        print("FILE MAPPINGS:")
+        print("=" * 60)
+        for file_id, mappings in result.category_mappings.items():
+            print(f"\n📄 {file_id}:")
+            for field, category in mappings.items():
+                print(f"   {field} → {category}")
+            
+        print("\n" + "=" * 60)
+        print("PROCESSING COMPLETE")
+        print("=" * 60)
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Error in main execution: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+# Test with different LM setups
+async def test_with_openai(api_key: str):
+    """Test with OpenAI"""
+    try:
+        categorizer = setup_categorizer_with_openai(api_key)
+        sample_data = {"test.json": '{"name": "John", "email": "john@test.com"}'}
+        attachments = create_attachments_from_content(sample_data)
+        return await categorizer.categorize_with_irena(attachments)
+    except Exception as e:
+        print(f"OpenAI test failed: {e}")
+        return None
+
+async def test_pattern_only():
+    """Test pattern-only mode"""
+    try:
+        categorizer = setup_categorizer_pattern_only()
+        sample_data = {
+            "test.json": '{"employee_name": "John Doe", "email_address": "john@test.com", "phone_number": "555-1234"}'
+        }
+        attachments = create_attachments_from_content(sample_data)
+        return await categorizer.categorize_with_irena(attachments)
+    except Exception as e:
+        print(f"Pattern-only test failed: {e}")
+        return None
+
+# Enhanced debugging and testing functions
+def debug_attachment_processing(attachments):
+    """Debug function to check attachment processing"""
+    print("\n🔍 DEBUGGING ATTACHMENT PROCESSING:")
+    print("-" * 40)
+    
+    try:
+        if hasattr(attachments, 'attachments'):
+            print(f"Found {len(attachments.attachments)} attachments via .attachments")
+            for i, att in enumerate(attachments.attachments):
+                print(f"  Attachment {i}: {getattr(att, 'filename', 'unknown')}")
+        elif hasattr(attachments, 'files'):
+            print(f"Found {len(attachments.files)} files via .files")
+        elif hasattr(attachments, '__iter__'):
+            att_list = list(attachments)
+            print(f"Found {len(att_list)} items via iteration")
+        else:
+            print("Cannot determine attachment structure")
+            print(f"Attachment type: {type(attachments)}")
+            print(f"Attachment dir: {dir(attachments)}")
+    except Exception as e:
+        print(f"Error debugging attachments: {e}")
+
+async def comprehensive_test():
+    """Comprehensive test of the system"""
+    print("\n🧪 RUNNING COMPREHENSIVE TESTS")
+    print("=" * 50)
+    
+    # Test 1: Pattern-only mode
+    print("\n1️⃣ Testing pattern-only mode...")
+    try:
+        result = await test_pattern_only()
+        if result and result.discovered_categories:
+            print(f"✅ Pattern-only test passed - found {len(result.discovered_categories)} categories")
+        else:
+            print("❌ Pattern-only test failed - no categories found")
+    except Exception as e:
+        print(f"❌ Pattern-only test error: {e}")
+    
+    # Test 2: Sample data processing
+    print("\n2️⃣ Testing sample data processing...")
+    try:
+        result = await process_sample_data()
+        if result and result.discovered_categories:
+            print(f"✅ Sample data test passed - found {len(result.discovered_categories)} categories")
+            for cat_name, matches in result.discovered_categories.items():
+                print(f"   📂 {cat_name}: {len(matches)} matches")
+        else:
+            print("❌ Sample data test failed - no categories found")
+    except Exception as e:
+        print(f"❌ Sample data test error: {e}")
+    
+    print("\n✨ Comprehensive testing complete!")
+
+if __name__ == "__main__":
+    import sys
+    
+    # Check command line arguments for different test modes
+    if len(sys.argv) > 1:
+        mode = sys.argv[1].lower()
+        
+        if mode == "test":
+            asyncio.run(comprehensive_test())
+        elif mode == "pattern":
+            asyncio.run(test_pattern_only())
+        elif mode == "debug":
+            # Debug mode - create sample attachments and debug
+            sample_data = {"test.json": '{"name": "test"}'}
+            attachments = create_attachments_from_content(sample_data)
+            debug_attachment_processing(attachments)
+        else:
+            print("Usage: python script.py [test|pattern|debug]")
+            print("  test    - Run comprehensive tests")
+            print("  pattern - Run pattern-only test")
+            print("  debug   - Debug attachment processing")
+            print("  (no arg) - Run main example")
+    else:
+        # Default: run main example
+        asyncio.run(main())import json
+import re
+import os
+import io
+from typing import Dict, List, Any, Tuple, Set, Optional, Union
+from collections import defaultdict, Counter
+from dataclasses import dataclass, field
+from datetime import datetime
+import logging
+from difflib import SequenceMatcher
+import asyncio
+from pathlib import Path
+
+# DSPy imports
+import dspy
+from dspy import Signature, InputField, OutputField, ChainOfThought, Predict
+from attachments.dspy import Attachments
+
+# File processing imports
+import pandas as pd
+import csv
+from io import StringIO
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class CategoryMatch:
+    """Represents a matched category with its confidence and location"""
+    category: str
+    confidence: float
+    field_name: str
+    sample_value: str
+    file_source: str
+    location: str
+    data_type: str
+    semantic_meaning: str = ""
+    reasoning: str = ""
+    retrieval_context: str = ""
+
+@dataclass
+class ProcessingResult:
+    """Result of processing all files"""
+    discovered_categories: Dict[str, List[CategoryMatch]]
+    category_mappings: Dict[str, Dict[str, str]]
+    context_explanation: str
+    confidence_scores: Dict[str, float]
+    category_metadata: Dict[str, Dict[str, Any]]
+    semantic_analysis: Dict[str, Any]
+    category_hierarchy: Dict[str, List[str]]
+    agent_message: str  # Message for the next agent
+    irena_iterations: List[Dict[str, Any]] = field(default_factory=list)
+
+@dataclass
+class IReRaIteration:
+    """Represents one iteration of iReRa process"""
+    iteration_number: int
+    retrieved_patterns: List[str]
+    reasoning_output: str
+    refined_categories: Dict[str, List[CategoryMatch]]
+    confidence_improvement: float
+    feedback: str
+
+# DSPy Signatures for iReRa implementation
+class DocumentRetrievalSignature(Signature):
+    """Retrieve relevant document patterns and context for categorization"""
+    document_content = InputField(desc="Raw document content to analyze")
+    existing_categories = InputField(desc="Previously discovered categories")
+    focus_area = InputField(desc="Specific area to focus retrieval on")
+    
+    relevant_patterns = OutputField(desc="Retrieved patterns and structures relevant to categorization")
+    context_information = OutputField(desc="Contextual information about the document domain")
+    potential_categories = OutputField(desc="Potential categories identified from retrieval")
+
+class ReasoningSignature(Signature):
+    """Reason about retrieved patterns to improve categorization"""
+    retrieved_patterns = InputField(desc="Patterns retrieved from documents")
+    current_categories = InputField(desc="Current category assignments")
+    context_information = InputField(desc="Domain context information")
+    
+    reasoning_analysis = OutputField(desc="Detailed reasoning about category assignments")
+    category_improvements = OutputField(desc="Suggested improvements to categories")
+    confidence_assessment = OutputField(desc="Assessment of confidence in current categories")
+
+class CategoryRefinementSignature(Signature):
+    """Refine categories based on reasoning output"""
+    reasoning_analysis = InputField(desc="Analysis from reasoning step")
+    category_improvements = InputField(desc="Suggested improvements")
+    original_categories = InputField(desc="Original category assignments")
+    
+    refined_categories = OutputField(desc="Refined category assignments")
+    refinement_reasoning = OutputField(desc="Reasoning for refinements made")
+    next_iteration_focus = OutputField(desc="What to focus on in next iteration")
+
+class AgentMessageSignature(Signature):
+    """Generate comprehensive message for the next agent"""
+    categorization_results = InputField(desc="Complete categorization results")
+    confidence_scores = InputField(desc="Confidence scores for each category")
+    metadata = InputField(desc="Category metadata and statistics")
+    processing_summary = InputField(desc="Summary of processing iterations and improvements")
+    
+    agent_message = OutputField(desc="Structured message for the next agent including categories, mappings, and recommendations")
+    key_findings = OutputField(desc="Key findings and insights from the categorization process")
+    recommendations = OutputField(desc="Specific recommendations for the next agent on how to use this categorization")
+
+class AttachmentProcessingSignature(Signature):
+    """Process attachments using DSPy Attachments API"""
+    attachments = InputField(desc="Attachments object containing files to process")
+    processing_instruction = InputField(desc="Instructions for how to process the attachments")
+    
+    extracted_data = OutputField(desc="Structured data extracted from all attachments")
+    file_summaries = OutputField(desc="Summary of each file's content and structure")
+    processing_notes = OutputField(desc="Notes about the processing and any issues encountered")
+
+class IReRaCategorizer:
+    """Enhanced categorizer with iReRa (Iterative Retrieval and Reasoning) implementation"""
+    
+    def __init__(self, lm_model: Optional[dspy.LM] = None, max_iterations: int = 3, use_lm: bool = True):
+        self.logger = logging.getLogger(__name__)
+        self.max_iterations = max_iterations
+        self.use_lm = use_lm  # Flag to disable LM usage for testing
+        
+        # Initialize DSPy components only if LM is available and enabled
+        self.lm_available = False
+        if use_lm:
+            try:
+                if lm_model:
+                    dspy.settings.configure(lm=lm_model)
+                    self.lm_available = True
+                else:
+                    # Try to use a simple local or mock LM for testing
+                    self.logger.warning("No LM model provided. Running in pattern-matching only mode.")
+                    self.use_lm = False
+                
+                if self.lm_available:
+                    # Initialize iReRa components
+                    self.document_retriever = ChainOfThought(DocumentRetrievalSignature)
+                    self.reasoner = ChainOfThought(ReasoningSignature)
+                    self.category_refiner = ChainOfThought(CategoryRefinementSignature)
+                    self.agent_message_generator = ChainOfThought(AgentMessageSignature)
+                    self.attachment_processor = ChainOfThought(AttachmentProcessingSignature)
+                    
+            except Exception as e:
+                self.logger.error(f"Failed to initialize LM components: {e}")
+                self.use_lm = False
+                self.lm_available = False
+        
+        # Configuration
+        self.minimum_confidence = 0.6
+        self.convergence_threshold = 0.05
+        self.category_similarity_threshold = 0.8
+        
+        # Enhanced data type patterns
+        self.data_type_patterns = {
+            'person_name': [
+                r'^[A-Z][a-z]+\s+[A-Z][a-z]+$',
+                r'^[A-Z][a-z]+\s+[A-Z]\.\s+[A-Z][a-z]+$',
+                r'^(Dr|Mr|Ms|Mrs)\.\s+[A-Z][a-z]+\s+[A-Z][a-z]+$',
+            ],
+            'date': [
+                r'\d{4}-\d{2}-\d{2}',
+                r'\d{2}/\d{2}/\d{4}',
+                r'\d{2}-\d{2}-\d{4}',
+                r'\d{4}/\d{2}/\d{2}',
+                r'[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}',
+                r'\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}',
+            ],
+            'phone': [
+                r'\(\d{3}\)\s*\d{3}-\d{4}',
+                r'\d{3}-\d{3}-\d{4}',
+                r'\d{10}',
+                r'\+\d{1,3}\s*\d{3,4}\s*\d{3,4}\s*\d{4}',
+            ],
+            'email': [
+                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            ],
+            'address': [
+                r'\d+\s+[A-Z][a-z]+\s+(Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd)',
+                r'\d+\s+[A-Z][a-z]+\s+[A-Z][a-z]+\s+(Street|St|Avenue|Ave|Road|Rd)',
+            ],
+            'currency': [
+                r'^\$?\d+\.?\d*$',
+                r'^\d{1,3}(,\d{3})*(\.\d{2})?$',
+                r'^\$\d{1,3}(,\d{3})*(\.\d{2})?$',
+            ],
+            'percentage': [
+                r'^\d+\.?\d*%$',
+                r'^\d+\.\d+$',
+            ],
+            'id_number': [
+                r'^[A-Z0-9]{6,12}$',
+                r'^\d{8,12}$',
+                r'^[A-Z]{2,3}\d{6,10}$',
+            ],
+            'boolean': [
+                r'^(true|false|yes|no|y|n|0|1)$'
+            ],
+            'numeric': [
+                r'^\d+\.?\d*$',
+            ],
+            'text': []
+        }
+
+    async def categorize_with_irena(self, attachments: Attachments) -> ProcessingResult:
+        """Main method implementing iReRa for document categorization"""
+        self.logger.info(f"Starting categorization with attachments (LM enabled: {self.use_lm})")
+        
+        # Step 1: Process attachments and extract initial data
+        files_data = await self._process_attachments_async(attachments)
+        self.logger.info(f"Processed {len(files_data)} files")
+        
+        # Step 2: Initialize categories with basic pattern matching
+        initial_categories = self._extract_initial_categories(files_data)
+        self.logger.info(f"Found {len(initial_categories)} initial categories")
+        
+        # Step 3: Run iReRa iterations (only if LM is available)
+        irena_iterations = []
+        current_categories = initial_categories
+        previous_confidence = 0.0
+        
+        if self.use_lm and self.lm_available and len(current_categories) > 0:
+            for iteration in range(self.max_iterations):
+                self.logger.info(f"Starting iReRa iteration {iteration + 1}")
+                
+                try:
+                    # Retrieval step
+                    retrieval_result = await self._retrieve_patterns(files_data, current_categories, iteration)
+                    
+                    # Reasoning step
+                    reasoning_result = await self._reason_about_patterns(
+                        retrieval_result, current_categories, files_data
+                    )
+                    
+                    # Refinement step
+                    refined_categories, refinement_reasoning = await self._refine_categories(
+                        reasoning_result, current_categories
+                    )
+                    
+                    # Calculate confidence improvement
+                    current_confidence = self._calculate_overall_confidence(refined_categories)
+                    confidence_improvement = current_confidence - previous_confidence
+                    
+                    # Store iteration results
+                    iteration_data = IReRaIteration(
+                        iteration_number=iteration + 1,
+                        retrieved_patterns=retrieval_result.get('patterns', []),
+                        reasoning_output=reasoning_result.get('analysis', ''),
+                        refined_categories=refined_categories,
+                        confidence_improvement=confidence_improvement,
+                        feedback=refinement_reasoning
+                    )
+                    irena_iterations.append(iteration_data.__dict__)
+                    
+                    # Check for convergence
+                    if confidence_improvement < self.convergence_threshold:
+                        self.logger.info(f"Converged after {iteration + 1} iterations")
+                        break
+                        
+                    current_categories = refined_categories
+                    previous_confidence = current_confidence
+                    
+                except Exception as e:
+                    self.logger.error(f"Error in iteration {iteration + 1}: {e}")
+                    break
+        else:
+            self.logger.info("Using pattern-matching only mode (no LM iterations)")
+        
+        # Step 4: Generate final results
+        final_result = await self._generate_final_results(
+            current_categories, files_data, irena_iterations
+        )
+        
+        return final_result
+
+    async def _process_attachments_async(self, attachments: Attachments) -> List[Dict[str, Any]]:
+        """Process attachments using DSPy Attachments API"""
+        files_data = []
+        
+        # Always try manual processing first to ensure we get some data
+        files_data = await self._process_attachments_manual(attachments)
+        
+        # Only try LM processing if we have LM available and initial processing succeeded
+        if self.use_lm and self.lm_available and len(files_data) > 0:
+            try:
+                self.logger.info("Attempting LM-based attachment processing")
+                # Use DSPy's attachment processor to enhance data
+                processing_result = self.attachment_processor(
+                    attachments=attachments,
+                    processing_instruction="Extract structured data from all attachments. For each file, identify key-value pairs, field names, and data types. Return data in JSON format with file_id as keys."
+                )
+                
+                # Parse the LM response to enhance file data
+                enhanced_data = self._parse_attachment_processing_result(
+                    processing_result.extracted_data,
+                    processing_result.file_summaries
+                )
+                
+                # If LM processing succeeds and provides more data, use it
+                if enhanced_data and len(enhanced_data) >= len(files_data):
+                    self.logger.info("Using LM-enhanced attachment processing")
+                    files_data = enhanced_data
+                else:
+                    self.logger.info("LM processing didn't improve results, using manual processing")
+                    
+            except Exception as e:
+                self.logger.warning(f"LM attachment processing failed, using manual processing: {e}")
+        
+        return files_data
+
+    def _parse_attachment_processing_result(self, extracted_data: str, file_summaries: str) -> List[Dict[str, Any]]:
+        """Parse the LM output from attachment processing"""
+        files_data = []
+        
+        try:
+            # Try to parse as JSON
+            data = json.loads(extracted_data)
+            
+            if isinstance(data, list):
+                files_data = data
+            elif isinstance(data, dict):
+                # If it's a single dict, treat each top-level key as a file
+                for file_id, content in data.items():
+                    file_data = {'file_id': file_id}
+                    if isinstance(content, dict):
+                        file_data.update(content)
+                    else:
+                        file_data['content'] = content
+                    files_data.append(file_data)
+            
+        except json.JSONDecodeError:
+            # If not JSON, try to parse structured text
+            files_data = self._parse_structured_text_output(extracted_data)
+        
+        return files_data
+
+    def _parse_structured_text_output(self, text_output: str) -> List[Dict[str, Any]]:
+        """Parse structured text output into file data"""
+        files_data = []
+        current_file = None
+        
+        lines = text_output.split('\n')
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Look for file indicators
+            if line.lower().startswith('file:') or 'filename:' in line.lower():
+                if current_file:
+                    files_data.append(current_file)
+                
+                # Extract filename
+                filename = line.split(':', 1)[1].strip() if ':' in line else f"file_{len(files_data)}"
+                current_file = {'file_id': filename}
+                
+            elif current_file and ':' in line:
+                # Extract key-value pairs
+                key, value = line.split(':', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+                current_file[key] = value
+        
+        if current_file:
+            files_data.append(current_file)
+        
+        return files_data
+
+    async def _process_attachments_manual(self, attachments: Attachments) -> List[Dict[str, Any]]:
+        """Fallback manual processing of attachments"""
+        files_data = []
+        
+        # Try to access attachments - the exact API may vary
+        try:
+            # Different ways to access attachments depending on the API
+            if hasattr(attachments, 'attachments'):
+                attachment_list = attachments.attachments
+            elif hasattr(attachments, 'files'):
+                attachment_list = attachments.files
+            elif hasattr(attachments, '__iter__'):
+                attachment_list = list(attachments)
+            else:
+                # If we can't iterate, try to get the data directly
+                attachment_list = [attachments]
+            
+            for i, attachment in enumerate(attachment_list):
+                try:
+                    # Try different ways to get filename and content
+                    filename = getattr(attachment, 'filename', f'attachment_{i}')
+                    
+                    # Try different methods to read content
+                    if hasattr(attachment, 'read'):
+                        content = attachment.read()
+                    elif hasattr(attachment, 'content'):
+                        content = attachment.content
+                    elif hasattr(attachment, 'data'):
+                        content = attachment.data
+                    else:
+                        content = str(attachment)
+                    
+                    # Ensure content is string
+                    if isinstance(content, bytes):
+                        content = content.decode('utf-8', errors='ignore')
+                    
+                    # Determine file type
+                    file_type = Path(filename).suffix.lower().lstrip('.') if '.' in filename else 'txt'
+                    
+                    # Process the content
+                    processed_data = await self._process_file_content(content, file_type, filename)
+                    files_data.append(processed_data)
+                    
+                except Exception as e:
+                    self.logger.error(f"Error processing attachment {i}: {e}")
+                    files_data.append({
+                        'file_id': f'attachment_{i}',
+                        'error': str(e),
+                        'content': {}
+                    })
+                    
+        except Exception as e:
+            self.logger.error(f"Error accessing attachments: {e}")
+            # Return empty data with error info
+            files_data = [{
+                'file_id': 'unknown',
+                'error': f"Could not access attachments: {e}",
+                'content': {}
+            }]
+        
+        return files_data
+
+    async def _process_file_content(self, content: str, file_type: str, filename: str) -> Dict[str, Any]:
+        """Process individual file content"""
+        processed_data = {
+            'file_id': filename,
+            'file_type': file_type,
+            'raw_content': content[:1000],  # Store first 1000 chars for context
+        }
+        
+        try:
+            if file_type == 'json':
+                json_data = json.loads(content)
+                processed_data.update(self._flatten_dict(json_data))
+            
+            elif file_type == 'csv':
+                # Use pandas for better CSV handling
+                df = pd.read_csv(StringIO(content))
+                for col in df.columns:
+                    # Take first non-null value as sample
+                    sample_value = df[col].dropna().iloc[0] if not df[col].dropna().empty else ""
+                    processed_data[col.strip()] = str(sample_value)
+            
+            elif file_type in ['txt', 'text']:
+                # Extract structured data from text
+                processed_data.update(self._extract_structured_data(content))
+            
+            else:
+                # Use LM to process unknown file types if available
+                try:
+                    # For unknown file types, extract what we can manually
+                    processed_data.update(self._extract_structured_data(content))
+                except Exception as e:
+                    self.logger.warning(f"Manual processing failed for {filename}: {e}")
+                    processed_data['processing_error'] = str(e)
+        
+        except Exception as e:
+            self.logger.error(f"Error processing content of {filename}: {e}")
+            processed_data['processing_error'] = str(e)
+        
+        return processed_data
+
+    def _parse_lm_structured_data(self, lm_output: str) -> Dict[str, Any]:
+        """Parse LM output into structured data"""
+        try:
+            # Try to parse as JSON first
+            return json.loads(lm_output)
+        except json.JSONDecodeError:
+            # If not JSON, try to extract key-value pairs
+            data = {}
+            lines = lm_output.split('\n')
+            for line in lines:
+                if ':' in line and not line.strip().startswith('#'):
+                    parts = line.split(':', 1)
+                    if len(parts) == 2:
+                        key, value = parts
+                        key = key.strip().lower().replace(' ', '_').replace('-', '_')
+                        data[key] = value.strip()
+            return data
+
+    def _extract_structured_data(self, content: str) -> Dict[str, Any]:
+        """Extract structured data from unstructured content"""
+        structured_data = {}
+        
+        # Look for key-value patterns
+        patterns = [
+            r'([A-Z][a-zA-Z\s]+?):\s*([^\n\r]+)',
+            r'([A-Z][a-zA-Z\s]+?)\s*=\s*([^\n\r]+)',
+            r'([A-Z][a-zA-Z\s]+?)\s*[-–]\s*([^\n\r]+)',
+            r'([A-Z][a-zA-Z\s]+?)\s*\|\s*([^\n\r]+)',
+        ]
+        
+        for pattern in patterns:
+            matches = re.findall(pattern, content)
+            for key, value in matches:
+                key = key.strip().lower().replace(' ', '_').replace('-', '_')
+                value = value.strip()
+                if key and value and len(key) < 50 and len(value) < 200:
+                    structured_data[key] = value
+        
+        # If no structured data found, try to extract common fields
+        if not structured_data:
+            # Look for common field patterns
+            email_match = re.search(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', content)
+            if email_match:
+                structured_data['email'] = email_match.group(1)
+            
+            phone_match = re.search(r'(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})', content)
+            if phone_match:
+                structured_data['phone'] = phone_match.group(1)
+            
+            date_match = re.search(r'(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})', content)
+            if date_match:
+                structured_data['date'] = date_match.group(1)
+        
+        return structured_data
+
+    def _extract_initial_categories(self, files_data: List[Dict[str, Any]]) -> Dict[str, List[CategoryMatch]]:
+        """Extract initial categories using pattern matching"""
+        categories = defaultdict(list)
+        
+        for file_data in files_data:
+            file_id = file_data.get('file_id', 'unknown')
+            
+            for field_name, value in file_data.items():
+                if field_name in ['file_id', 'file_type', 'raw_content', 'error', 'processing_error']:
+                    continue
+                
+                str_value = str(value).strip()
+                if not str_value or len(str_value) < 1:
+                    continue
+                
+                # Detect data type and create category
+                data_type = self._detect_data_type(str_value)
+                category_name = self._generate_category_name(field_name, data_type)
+                
+                match = CategoryMatch(
+                    category=category_name,
+                    confidence=0.7,  # Initial confidence
+                    field_name=field_name,
+                    sample_value=str_value[:100],  # Truncate long values
+                    file_source=file_id,
+                    location=field_name,
+                    data_type=data_type,
+                    reasoning="Initial pattern matching based on field name and data type"
+                )
+                
+                categories[category_name].append(match)
+        
+        return dict(categories)
+
+    def _detect_data_type(self, value: str) -> str:
+        """Detect data type of a value"""
+        value = value.strip()
+        
+        for data_type, patterns in self.data_type_patterns.items():
+            for pattern in patterns:
+                if re.match(pattern, value, re.IGNORECASE):
+                    return data_type
+        return 'text'
+
+    def _generate_category_name(self, field_name: str, data_type: str) -> str:
+        """Generate a category name based on field name and data type"""
+        # Clean field name
+        clean_field = field_name.lower().replace('_', ' ').replace('-', ' ')
+        clean_field = re.sub(r'[^a-zA-Z0-9\s]', '', clean_field)
+        clean_field = ' '.join(clean_field.split())
+        
+        # Add data type if it's not text and not already in the name
+        if data_type != 'text' and data_type not in clean_field:
+            return f"{clean_field}_{data_type}"
+        return clean_field.replace(' ', '_')
+
+    async def _retrieve_patterns(self, files_data: List[Dict[str, Any]], 
+                                current_categories: Dict[str, List[CategoryMatch]], 
+                                iteration: int) -> Dict[str, Any]:
+        """Retrieve relevant patterns from documents"""
+        
+        # Prepare document content for retrieval
+        document_content = self._prepare_document_content(files_data)
+        existing_categories = self._serialize_categories(current_categories)
+        
+        # Determine focus area based on iteration
+        focus_areas = [
+            "field name patterns and semantic relationships",
+            "data type consistency and validation patterns",
+            "cross-document category relationships and hierarchies"
+        ]
+        focus_area = focus_areas[min(iteration, len(focus_areas) - 1)]
+        
+        if not self.use_lm or not self.lm_available:
+            # Fallback pattern retrieval without LM
+            return {
+                'patterns': f"Manual pattern analysis for {focus_area}",
+                'context': f"Processing {len(files_data)} files with pattern matching",
+                'potential_categories': "Pattern-based category suggestions"
+            }
+        
+        try:
+            # Perform retrieval
+            retrieval_result = self.document_retriever(
+                document_content=document_content,
+                existing_categories=existing_categories,
+                focus_area=focus_area
+            )
+            
+            return {
+                'patterns': retrieval_result.relevant_patterns,
+                'context': retrieval_result.context_information,
+                'potential_categories': retrieval_result.potential_categories
+            }
+        except Exception as e:
+            self.logger.error(f"Error in retrieval step: {e}")
+            return {
+                'patterns': "Pattern retrieval failed - using manual analysis",
+                'context': "Manual context analysis",
+                'potential_categories': "Pattern-based suggestions"
+            }
+
+    async def _reason_about_patterns(self, retrieval_result: Dict[str, Any], 
+                                   current_categories: Dict[str, List[CategoryMatch]], 
+                                   files_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Reason about retrieved patterns to improve categorization"""
+        
+        if not self.use_lm or not self.lm_available:
+            # Fallback reasoning without LM
+            return {
+                'analysis': "Manual analysis: Categories appear consistent based on pattern matching",
+                'improvements': "Suggested improvements based on pattern analysis",
+                'confidence': "Confidence assessment based on pattern matching consistency"
+            }
+        
+        try:
+            reasoning_result = self.reasoner(
+                retrieved_patterns=str(retrieval_result['patterns']),
+                current_categories=self._serialize_categories(current_categories),
+                context_information=str(retrieval_result['context'])
+            )
+            
+            return {
+                'analysis': reasoning_result.reasoning_analysis,
+                'improvements': reasoning_result.category_improvements,
+                'confidence': reasoning_result.confidence_assessment
+            }
+        except Exception as e:
+            self.logger.error(f"Error in reasoning step: {e}")
+            return {
+                'analysis': "Reasoning analysis failed - using heuristic analysis",
+                'improvements': "Manual improvement suggestions",
+                'confidence': "Pattern-based confidence assessment"
+            }
+
+    async def _refine_categories(self, reasoning_result: Dict[str, Any], 
+                               current_categories: Dict[str, List[CategoryMatch]]) -> Tuple[Dict[str, List[CategoryMatch]], str]:
+        """Refine categories based on reasoning output"""
+        
+        try:
+            refinement_result = self.category_refiner(
+                reasoning_analysis=str(reasoning_result['analysis']),
+                category_improvements=str(reasoning_result['improvements']),
+                original_categories=self._serialize_categories(current_categories)
+            )
+            
+            # Parse refinement results and update categories
+            refined_categories = self._parse_refined_categories(
+                refinement_result.refined_categories, current_categories
+            )
+            
+            return refined_categories, refinement_result.refinement_reasoning
+        except Exception as e:
+            self.logger.error(f"Error in refinement step: {e}")
+            return current_categories, "Refinement failed"
+
+    def _parse_refined_categories(self, refinement_output: str, 
+                                original_categories: Dict[str, List[CategoryMatch]]) -> Dict[str, List[CategoryMatch]]:
+        """Parse LM output to update categories"""
+        refined_categories = {}
+        
+        # Deep copy original categories
+        for category_name, matches in original_categories.items():
+            refined_categories[category_name] = [
+                CategoryMatch(
+                    category=match.category,
+                    confidence=match.confidence,
+                    field_name=match.field_name,
+                    sample_value=match.sample_value,
+                    file_source=match.file_source,
+                    location=match.location,
+                    data_type=match.data_type,
+                    semantic_meaning=match.semantic_meaning,
+                    reasoning=match.reasoning,
+                    retrieval_context=match.retrieval_context
+                ) for match in matches
+            ]
+        
+        try:
+            # Try to parse as JSON
+            refinements = json.loads(refinement_output)
+            
+            for category_name, updates in refinements.items():
+                if category_name in refined_categories:
+                    # Update existing category
+                    for match in refined_categories[category_name]:
+                        if isinstance(updates, dict):
+                            if 'confidence' in updates:
+                                try:
+                                    match.confidence = min(0.95, max(0.1, float(updates['confidence'])))
+                                except (ValueError, TypeError):
+                                    pass
+                            if 'reasoning' in updates:
+                                match.reasoning = str(updates['reasoning'])
+                            if 'semantic_meaning' in updates:
+                                match.semantic_meaning = str(updates['semantic_meaning'])
+                
+        except json.JSONDecodeError:
+            # If not JSON, apply heuristic improvements
+            self._apply_heuristic_refinements(refined_categories, refinement_output)
+        
+        return refined_categories
+
+    def _apply_heuristic_refinements(self, categories: Dict[str, List[CategoryMatch]], 
+                                   refinement_text: str):
+        """Apply heuristic refinements based on text analysis"""
+        refinement_lower = refinement_text.lower()
+        
+        for category_name in categories.keys():
+            category_lower = category_name.lower()
+            
+            # Look for confidence indicators
+            if any(phrase in refinement_lower for phrase in [f"confident about {category_lower}", f"{category_lower} is accurate", f"{category_lower} looks good"]):
+                for match in categories[category_name]:
+                    match.confidence = min(0.95, match.confidence + 0.1)
+                    match.reasoning += " | Increased confidence based on LM feedback"
+            
+            elif any(phrase in refinement_lower for phrase in [f"uncertain about {category_lower}", f"{category_lower} needs improvement", f"doubt {category_lower}"]):
+                for match in categories[category_name]:
+                    match.confidence = max(0.3, match.confidence - 0.1)
+                    match.reasoning += " | Decreased confidence based on LM feedback"
+
+    async def _generate_final_results(self, final_categories: Dict[str, List[CategoryMatch]], 
+                                    files_data: List[Dict[str, Any]], 
+                                    irena_iterations: List[Dict[str, Any]]) -> ProcessingResult:
+        """Generate final processing results"""
+        
+        # Generate metadata
+        category_metadata = self._generate_category_metadata(final_categories)
+        
+        # Calculate confidence scores
+        confidence_scores = self._calculate_confidence_scores(final_categories)
+        
+        # Create file mappings
+        file_mappings = self._create_file_mappings(files_data, final_categories)
+        
+        # Generate semantic analysis
+        semantic_analysis = self._generate_semantic_analysis(final_categories, irena_iterations)
+        
+        # Generate category hierarchy
+        category_hierarchy = self._generate_category_hierarchy(final_categories)
+        
+        # Generate context explanation
+        context_explanation = self._generate_context_explanation(
+            final_categories, category_metadata, files_data, semantic_analysis
+        )
+        
+        # Generate message for next agent
+        agent_message = await self._generate_agent_message(
+            final_categories, confidence_scores, category_metadata, semantic_analysis
+        )
+        
+        return ProcessingResult(
+            discovered_categories=final_categories,
+            category_mappings=file_mappings,
+            context_explanation=context_explanation,
+            confidence_scores=confidence_scores,
+            category_metadata=category_metadata,
+            semantic_analysis=semantic_analysis,
+            category_hierarchy=category_hierarchy,
+            agent_message=agent_message,
+            irena_iterations=irena_iterations
+        )
+
+    async def _generate_agent_message(self, categories: Dict[str, List[CategoryMatch]], 
+                                    confidence_scores: Dict[str, float], 
+                                    metadata: Dict[str, Dict[str, Any]],
+                                    semantic_analysis: Dict[str, Any]) -> str:
+        """Generate comprehensive message for the next agent"""
+        
+        if not self.use_lm or not self.lm_available:
+            # Generate fallback message without LM
+            return self._generate_fallback_agent_message(categories, confidence_scores, metadata)
+        
+        try:
+            # Prepare processing summary
+            processing_summary = f"Completed {semantic_analysis.get('total_iterations', 0)} iReRa iterations with "
+            processing_summary += f"{'convergence achieved' if semantic_analysis.get('convergence_achieved', False) else 'maximum iterations reached'}."
+            
+            message_result = self.agent_message_generator(
+                categorization_results=self._serialize_categories(categories),
+                confidence_scores=json.dumps(confidence_scores, indent=2),
+                metadata=json.dumps(metadata, indent=2),
+                processing_summary=processing_summary
+            )
+            
+            return message_result.agent_message
+        except Exception as e:
+            self.logger.error(f"Error generating agent message: {e}")
+            # Fallback message generation
+            return self._generate_fallback_agent_message(categories, confidence_scores, metadata)
+
+    def _generate_fallback_agent_message(self, categories: Dict[str, List[CategoryMatch]], 
+                                       confidence_scores: Dict[str, float], 
+                                       metadata: Dict[str, Dict[str, Any]]) -> str:
+        """Generate fallback agent message when LM fails"""
+        message = "CATEGORIZATION RESULTS\n"
+        message += "=" * 50 + "\n\n"
+        
+        message += f"SUMMARY: Discovered {len(categories)} categories across the provided documents.\n\n"
+        
+        message += "CATEGORIES DISCOVERED:\n"
+        for category_name, matches in categories.items():
+            confidence = confidence_scores.get(category_name, 0.0)
+            message += f"- {category_name.upper()}: {len(matches)} instances (confidence: {confidence:.2f})\n"
+            
+            # Add sample values
+            sample_values = list(set(match.sample_value for match in matches[:3]))
+            message += f"  Sample values: {', '.join(sample_values)}\n"
+            
+            # Add file distribution
+            files = list(set(match.file_source for match in matches))
+            message += f"  Found in files: {', '.join(files)}\n\n"
+        
+        message += "RECOMMENDATIONS FOR NEXT AGENT:\n"
+        message += "1. Use the category mappings to understand document structure\n"
+        message += "2. Pay attention to confidence scores when processing data\n"
+        message += "3. Consider data type information for validation and processing\n"
+        message += "4. Review low-confidence categories for potential manual verification\n"
+        
+        return message
+
+    # Helper methods
+    def _prepare_document_content(self, files_data: List[Dict[str, Any]]) -> str:
+        """Prepare document content for analysis"""
+        content_parts = []
+        for file_data in files_data:
+            file_id = file_data.get('file_id', 'unknown')
+            content_parts.append(f"File: {file_id}")
+            
+            for key, value in file_data.items():
+                if key not in ['file_id', 'file_type', 'raw_content', 'error', 'processing_error']:
+                    content_parts.append(f"  {key}: {str(value)[:100]}")  # Truncate long values
+        
+        return '\n'.join(content_parts)
+
+    def _serialize_categories(self, categories: Dict[str, List[CategoryMatch]]) -> str:
+        """Serialize categories for LM processing"""
+        serialized = {}
+        for category_name, matches in categories.items():
+            serialized[category_name] = [
+                {
+                    'field_name': match.field_name,
+                    'sample_value': match.sample_value[:50],  # Truncate for LM efficiency
+                    'confidence': round(match.confidence, 2),
+                    'data_type': match.data_type,
+                    'file_source': match.file_source
+                }
+                for match in matches[:3]  # Limit to prevent overwhelming
+            ]
+        return json.dumps(serialized, indent=2)
+
+    def _calculate_overall_confidence(self, categories: Dict[str, List[CategoryMatch]]) -> float:
+        """Calculate overall confidence across all categories"""
+        if not categories:
+            return 0.0
+        
+        total_confidence = 0.0
+        total_matches = 0
+        
+        for matches in categories.values():
+            for match in matches:
+                total_confidence += match.confidence
+                total_matches += 1
+        
+        return total_confidence / total_matches if total_matches > 0 else 0.0
+
+    def _flatten_dict(self, d: Dict[str, Any], parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+        """Flatten nested dictionary"""
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(self._flatten_dict(v, new_key, sep=sep).items())
+            elif isinstance(v, list):
+                for i, item in enumerate(v):
+                    if isinstance(item, dict):
+                        items.extend(self._flatten_dict(item, f"{new_key}[{i}]", sep=sep).items())
+                    else:
+                        items.append((f"{new_key}[{i}]", item))
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+    def _generate_category_metadata(self, categories: Dict[str, List[CategoryMatch]]) -> Dict[str, Dict[str, Any]]:
+        """Generate metadata for each category"""
+        metadata = {}
+        for category_name, matches in categories.items():
+            metadata[category_name] = {
+                'total_occurrences': len(matches),
+                'unique_files': len(set(match.file_source for match in matches)),
+                'average_confidence': sum(match.confidence for match in matches) / len(matches),
+                'data_types': list(set(match.data_type for match in matches)),
+                'field_variations': list(set(match.field_name for match in matches)),
+                'sample_values': [match.sample_value for match in matches[:3]],
+                'confidence_range': {
+                    'min': min(match.confidence for match in matches),
+                    'max': max(match.confidence for match in matches)
+                }
+            }
+        return metadata
+
+    def _calculate_confidence_scores(self, categories: Dict[str, List[CategoryMatch]]) -> Dict[str, float]:
+        """Calculate confidence scores for each category"""
+        confidence_scores = {}
+        for category_name, matches in categories.items():
+            if matches:
+                confidence_scores[category_name] = sum(match.confidence for match in matches) / len(matches)
+            else:
+                confidence_scores[category_name] = 0.0
+        return confidence_scores
+
+    def _create_file_mappings(self, files_data: List[Dict[str, Any]], 
+                            categories: Dict[str, List[CategoryMatch]]) -> Dict[str, Dict[str, str]]:
+        """Create mappings from files to categories"""
+        file_mappings = {}
+        
+        for file_data in files_data:
+            file_id = file_data.get('file_id', 'unknown')
+            file_mappings[file_id] = {}
+            
+            for category_name, matches in categories.items():
+                for match in matches:
+                    if match.file_source == file_id:
+                        file_mappings[file_id][match.field_name] = category_name
+        
+        return file_mappings
+
+    def _generate_semantic_analysis(self, categories: Dict[str, List[CategoryMatch]], 
+                                  iterations: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Generate semantic analysis of the categorization process"""
+        return {
+            'total_categories': len(categories),
+            'total_iterations': len(iterations),
+            'convergence_achieved': len(iterations) < self.max_iterations,
+            'category_distribution': {name: len(matches) for name, matches in categories.items()},
+            'iteration_improvements': [
+                {
+                    'iteration': i + 1,
+                    'confidence_improvement': iteration.get('confidence_improvement', 0)
+                }
+                for i, iteration in enumerate(iterations)
+            ],
+            'average_confidence': self._calculate_overall_confidence(categories),
+            'high_confidence_categories': [
+                name for name, matches in categories.items() 
+                if sum(m.confidence for m in matches) / len(matches) > 0.8
+            ],
+            'low_confidence_categories': [
+                name for name, matches in categories.items() 
+                if sum(m.confidence for m in matches) / len(matches) < 0.6
+            ]
+        }
+
+    def _generate_category_hierarchy(self, categories: Dict[str, List[CategoryMatch]]) -> Dict[str, List[str]]:
+        """Generate category hierarchy"""
+        hierarchy = {}
+        
+        # Group categories by data type
+        for category_name, matches in categories.items():
+            data_types = [match.data_type for match in matches]
+            main_type = max(set(data_types), key=data_types.count)
+            
+            if main_type not in hierarchy:
+                hierarchy[main_type] = []
+            hierarchy[main_type].append(category_name)
+        
+        return hierarchy
+
+    def _generate_context_explanation(self, categories: Dict[str, List[CategoryMatch]], 
+                                    metadata: Dict[str, Dict[str, Any]], 
+                                    files_data: List[Dict[str, Any]], 
+                                    semantic_analysis: Dict[str, Any]) -> str:
+        """Generate comprehensive context explanation"""
+        explanation = f"DOCUMENT CATEGORIZATION ANALYSIS\n"
+        explanation += f"Processed {len(files_data)} files and discovered {len(categories)} distinct categories.\n\n"
+        
+        explanation += "CATEGORY SUMMARY:\n"
+        for category_name, meta in metadata.items():
+            explanation += f"• {category_name}: {meta['total_occurrences']} occurrences across {meta['unique_files']} files "
+            explanation += f"(avg confidence: {meta['average_confidence']:.2f})\n"
+        
+        explanation += f"\nPROCESSING DETAILS:\n"
+        explanation += f"• Total iReRa iterations: {semantic_analysis.get('total_iterations', 0)}\n"
+        explanation += f"• Convergence achieved: {'Yes' if semantic_analysis.get('convergence_achieved', False) else 'No'}\n"
+        explanation += f"• Overall confidence: {semantic_analysis.get('average_confidence', 0):.2f}\n"
+        
+        if semantic_analysis.get('high_confidence_categories'):
+            explanation += f"• High confidence categories: {', '.join(semantic_analysis['high_confidence_categories'])}\n"
+        
+        if semantic_analysis.get('low_confidence_categories'):
+            explanation += f"• Low confidence categories (may need review): {', '.join(semantic_analysis['low_confidence_categories'])}\n"
+        
+        return explanation
+
+
+# Helper functions for working with DSPy Attachments
+def create_attachments_from_files(file_paths: List[str]) -> Attachments:
+    """Create Attachments object from file paths"""
+    # This will depend on the exact DSPy Attachments API
+    # You may need to adjust this based on the actual implementation
+    try:
+        return Attachments(files=file_paths)
+    except:
+        # Alternative constructor patterns
+        try:
+            return Attachments.from_files(file_paths)
+        except:
+            # If we can't figure out the constructor, return a basic object
+            # and let the processing handle it
+            attachments = Attachments()
+            for file_path in file_paths:
+                # Try to add files if the API supports it
+                if hasattr(attachments, 'add_file'):
+                    attachments.add_file(file_path)
+                elif hasattr(attachments, 'append'):
+                    attachments.append(file_path)
+            return attachments
+
+def create_attachments_from_content(file_data: Dict[str, str]) -> Attachments:
+    """Create Attachments object from content dictionary"""
+    # Debug: Print what we're trying to create
+    print(f"🔧 Creating attachments from {len(file_data)} files:")
+    for filename, content in file_data.items():
+        print(f"   📄 {filename}: {len(content)} characters")
+    
+    # Create temporary files since DSPy Attachments seems to work with file paths
+    import tempfile
+    import os
+    
+    temp_files = []
+    temp_dir = tempfile.mkdtemp()
+    
+    try:
+        print(f"   📁 Created temp directory: {temp_dir}")
+        
+        # Create temporary files
+        for filename, content in file_data.items():
+            temp_path = os.path.join(temp_dir, filename)
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            temp_files.append(temp_path)
+            print(f"   ✅ Created temp file: {temp_path}")
+        
+        # Try different ways to create Attachments with file paths
+        print(f"   🔄 Trying to create Attachments with {len(temp_files)} files...")
+        
+        # Method 1: Try with files parameter
+        try:
+            attachments = Attachments(files=temp_files)
+            print(f"   ✅ Created Attachments with files= parameter")
+            return attachments
+        except Exception as e:
+            print(f"   ❌ files= parameter failed: {e}")
+        
+        # Method 2: Try basic constructor and inspect
+        try:
+            attachments = Attachments()
+            print(f"   📋 Basic Attachments created: {type(attachments)}")
+            print(f"   📋 Available methods: {[m for m in dir(attachments) if not m.startswith('_')]}")
+            
+            # Try to understand the structure better
+            if hasattr(attachments, 'attachments'):
+                print(f"   📋 .attachments type: {type(attachments.attachments)}")
+                print(f"   📋 .attachments value: {attachments.attachments}")
+            
+            # Try to add files to existing attachments
+            if hasattr(attachments, 'add'):
+                for temp_path in temp_files:
+                    attachments.add(temp_path)
+                    print(f"   ✅ Added {temp_path} via .add()")
+            elif hasattr(attachments, 'append'):
+                for temp_path in temp_files:
+                    attachments.append(temp_path)
+                    print(f"   ✅ Added {temp_path} via .append()")
+            elif hasattr(attachments, 'attachments') and hasattr(attachments.attachments, 'append'):
+                for temp_path in temp_files:
+                    attachments.attachments.append(temp_path)
+                    print(f"   ✅ Added {temp_path} via .attachments.append()")
+            
+            return attachments
+            
+        except Exception as e:
+            print(f"   ❌ Basic constructor approach failed: {e}")
+    
+    except Exception as e:
+        print(f"   ❌ Temp file creation failed: {e}")
+    
+    # Final fallback: create a mock attachments object that mimics the interface
+    print("   🆘 Creating mock attachments object...")
+    
+    class MockAttachment:
+        def __init__(self, filename, content):
+            self.filename = filename
+            self.content = content
+        
+        def read(self):
+            return self.content
+        
+        def __str__(self):
+            return f"MockAttachment({self.filename})"
+    
+    class MockAttachments:
+        def __init__(self, file_data):
+            self.attachments = [MockAttachment(fname, content) for fname, content in file_data.items()]
+            self.files = self.attachments  # Alternative access method
+            self.metadata = {}
+            self.images = []
+            self.text = ""
+        
+        def __iter__(self):
+            return iter(self.attachments)
+        
+        def __len__(self):
+            return len(self.attachments)
+        
+        def dict(self):
+            return {"attachments": [{"filename": att.filename, "content": att.content} for att in self.attachments]}
+        
+        def serialize_model(self):
+            return self.dict()
+        
+        def model_dump(self):
+            return self.dict()
+    
+    mock_attachments = MockAttachments(file_data)
+    print(f"   ✅ Created mock attachments with {len(mock_attachments)} files")
+    
+    # Clean up temp files if they were created
+    try:
+        for temp_path in temp_files:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        if os.path.exists(temp_dir):
+            os.rmdir(temp_dir)
+    except:
+        pass  # Ignore cleanup errors
+    
+    return mock_attachments
+
+# Updated example usage functions
+async def process_files_from_directory(directory_path: str, categorizer: IReRaCategorizer) -> ProcessingResult:
+    """Process all files from a directory using DSPy Attachments"""
+    directory = Path(directory_path)
+    file_paths = [str(file_path) for file_path in directory.glob("*") if file_path.is_file()]
+    
+    # Create DSPy Attachments object
+    attachments = create_attachments_from_files(file_paths)
+    
+    return await categorizer.categorize_with_irena(attachments)
+
+async def process_sample_data() -> ProcessingResult:
+    """Process sample data using DSPy Attachments"""
+    # Create sample data
+    sample_data = {
+        "employee_data.json": json.dumps({
+            "name": "John Doe",
+            "email": "john.doe@company.com",
+            "phone": "(555) 123-4567",
+            "hire_date": "2023-01-15",
+            "salary": "$75000",
+            "department": "Engineering"
+        }, indent=2),
+        "customer_info.csv": """name,email,phone,address
+Jane Smith,jane@email.com,555-987-6543,123 Main St
+Bob Johnson,bob@test.com,555-111-2222,456 Oak Ave""",
+        "report.txt": """Employee Performance Report
+Name: Alice Williams
+Email: alice@company.com
+Performance Score: 85%
+Review Date: 2024-03-15
+Department: Marketing"""
+    }
+    
+    # Create DSPy Attachments object
+    attachments = create_attachments_from_content(sample_data)
+    
+    # Initialize categorizer
+    categorizer = IReRaCategorizer(max_iterations=2)
+    
+    # Process
+    return await categorizer.categorize_with_irena(attachments)
+
+# Simple LM setup functions that avoid Google Cloud issues
+def setup_categorizer_with_openai(api_key: str) -> IReRaCategorizer:
+    """Setup categorizer with OpenAI (safest option)"""
+    try:
+        lm = dspy.OpenAI(model="gpt-3.5-turbo", api_key=api_key)
+        return IReRaCategorizer(lm_model=lm, max_iterations=3, use_lm=True)
+    except Exception as e:
+        print(f"Failed to setup OpenAI: {e}")
+        return IReRaCategorizer(use_lm=False)
+
+def setup_categorizer_pattern_only() -> IReRaCategorizer:
+    """Setup categorizer without LM (pattern matching only)"""
+    return IReRaCategorizer(use_lm=False, max_iterations=1)
+
+def setup_categorizer_with_anthropic(api_key: str) -> IReRaCategorizer:
+    """Setup categorizer with Anthropic Claude"""
+    try:
+        lm = dspy.Claude(model="claude-3-sonnet-20240229", api_key=api_key)
+        return IReRaCategorizer(lm_model=lm, max_iterations=3, use_lm=True)
+    except Exception as e:
+        print(f"Failed to setup Claude: {e}")
+        return IReRaCategorizer(use_lm=False)
+
+def setup_categorizer_with_local_model(base_url: str, model_name: str = "llama3") -> IReRaCategorizer:
+    """Setup categorizer with local model (Ollama, etc.)"""
+    try:
+        lm = dspy.OllamaLocal(model=model_name, base_url=base_url)
+        return IReRaCategorizer(lm_model=lm, max_iterations=3, use_lm=True)
+    except Exception as e:
+        print(f"Failed to setup local model: {e}")
+        return IReRaCategorizer(use_lm=False)
+async def main():
+    """Main execution example"""
+    try:
+        # Option 1: Process sample data
+        print("Processing sample data...")
+        result = await process_sample_data()
+        
+        print("AGENT MESSAGE:")
+        print("=" * 50)
+        print(result.agent_message)
+        print("\n" + "=" * 50)
+        
+        print("\nDISCOVERED CATEGORIES:")
+        for category, matches in result.discovered_categories.items():
+            print(f"\n{category}:")
+            for match in matches:
+                print(f"  - {match.field_name} = '{match.sample_value}' (confidence: {match.confidence:.2f})")
+        
+        print("\nCONFIDENCE SCORES:")
+        for category, score in result.confidence_scores.items():
+            print(f"  {category}: {score:.2f}")
+            
+        # Option 2: Process files from directory (uncomment to use)
+        # directory_path = "./documents"  # Change to your directory
+        # categorizer = IReRaCategorizer(max_iterations=3)
+        # result = await process_files_from_directory(directory_path, categorizer)
+        
+    except Exception as e:
+        print(f"Error in main execution: {e}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
