@@ -48,8 +48,8 @@ dspy module use to analyze a collection of documents as a whole. documents must 
 inputs: documents: list of Attachments (a list of documents to be analyzed, as attachment objects. see trend_test.py for an example of how it's used.)
         categories: list of strings (a list of categories that exists as strings. these are used as a guide to know what to look for in each document.)
         context: string (the context of the overall goal and previous steps from other agents.)
-doc_sumarry: string (csv file formatted string with the information from each category filled out for each document.)
-context: string: (the context of the instructions, previous agents notes, and this agents notes.)
+Outputs: doc_sumarry: string (csv file formatted string with the information from each category filled out for each document.)
+        context: string: (the context of the instructions, previous agents notes, and this agents notes.)
 """
 class trend_analyzer(dspy.Module):
 
