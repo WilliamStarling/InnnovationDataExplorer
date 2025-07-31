@@ -75,7 +75,7 @@ if __name__ == "__main__":
     #setup mlflow
     mlflow_tracking_uri = "../../mlflow/experiments"
     mlflow.set_tracking_uri(mlflow_tracking_uri)
-    mlflow.set_experiment("CategoryTrendFinder")
+    #mlflow.set_experiment("CategoryTrendFinder")
 
     #setup variables
     analyze_documents = document_analysis()
@@ -89,10 +89,10 @@ if __name__ == "__main__":
       analysis_result, context = example_usage(documents, context, analysis_result, analyze_documents)
     else:
       # Get custom document paths
-      print("Enter document paths (press Enter after each path, type 'done' when finished):")
+      print("Enter document paths (press Enter after each path, press enter again when finished):")
       while True:
         doc_path = input("Document path: ")
-        if doc_path.lower() == 'done':
+        if not doc_path:
           break
         if doc_path.strip():  # Only add non-empty paths
           try:
