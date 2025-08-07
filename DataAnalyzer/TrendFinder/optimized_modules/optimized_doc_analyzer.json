@@ -1,0 +1,48 @@
+{
+  "predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Advanced document analyzer that extracts structured information from documents and maintains CSV format.\n\nKey instructions:\n1. Extract data for each category from the document content\n2. Use 'N\/A' when information is not available or not applicable\n3. Maintain proper CSV format with headers and comma separation\n4. Keep context updates brief and relevant to avoid token bloat\n5. Focus on extracting meaningful data patterns and trends",
+      "fields": [
+        {
+          "prefix": "Document:",
+          "description": "Document to analyze - extract information matching the specified categories"
+        },
+        {
+          "prefix": "Categories:",
+          "description": "List of data categories to extract from the document (e.g., 'violations', 'revenue', etc.)"
+        },
+        {
+          "prefix": "In Csv:",
+          "description": "Existing CSV data with headers. Append new row with current document's data"
+        },
+        {
+          "prefix": "Last Context:",
+          "description": "Previous context and trends identified. Keep this information and add new insights if significant"
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Next Context:",
+          "description": "Updated context with new trends or patterns. Keep brief (under 50 words) to prevent context bloat"
+        },
+        {
+          "prefix": "Out Csv:",
+          "description": "CSV with new row added. Format: proper headers, comma-separated values, use 'N\/A' for missing data"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.0.0b2",
+      "cloudpickle": "3.1"
+    }
+  }
+}
